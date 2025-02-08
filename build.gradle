@@ -1,9 +1,25 @@
+buildscript {
+    repositories {
+        maven {
+            name 'Beanification'
+            url 'https://maven.tamaized.com/releases/'
+        }
+    }
+    dependencies {
+        classpath "tamaized:beanification:${minecraft_version}-${beanification_version}:gradle"
+    }
+}
+
 plugins {
     id 'idea'
     id 'java-library'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.76'
+    id "com.dorongold.task-tree" version "4.0.0"
+    id 'com.gradleup.shadow' version '8.3.3'
 }
+
+apply plugin: 'tamaized.beanification'
 
 tasks.named('wrapper', Wrapper).configure {
     // Define wrapper values here so as to not have to always do so when updating gradlew.properties.
@@ -14,11 +30,26 @@ tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
+configurations {
+    shade
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    configurations = [project.configurations.shade]
+    relocate 'tamaized.beanification', "${mod_group_id}.beanification"
+}
+
 version = mod_version
 group = mod_group_id
 
 repositories {
     mavenLocal()
+
+    maven {
+        name 'Beanification'
+        url 'https://maven.tamaized.com/releases/'
+    }
 }
 
 base {
@@ -134,6 +165,12 @@ dependencies {
     // For more info:
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    def beanification = "tamaized:beanification:${project.minecraft_version}-${project.beanification_version}"
+    implementation beanification
+    shade beanification
+    testImplementation "${beanification}:tests"
+    testCompileOnly "${beanification}:test-sources"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -188,3 +225,5 @@ idea {
         downloadJavadoc = true
     }
 }
+
+build.dependsOn shadowJar
