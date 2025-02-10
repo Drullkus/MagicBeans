@@ -6,12 +6,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import tamaized.beanification.Autowired;
-
-import java.util.Objects;
+import tamaized.beanification.PostConstruct;
 
 @tamaized.beanification.Component
 public class CreativeTabHolders {
@@ -32,9 +30,8 @@ public class CreativeTabHolders {
 				output.accept(items.EXAMPLE_ITEM.get());
 			}).build());
 
-	{
-		IEventBus modBus = Objects.requireNonNull(ModLoadingContext.get().getActiveContainer().getEventBus());
-
+	@PostConstruct
+	private void register(IEventBus modBus) {
 		CREATIVE_MODE_TABS.register(modBus);
 	}
 }
